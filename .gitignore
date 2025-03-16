@@ -1,0 +1,29 @@
+# Node.js dependencies
+node_modules/
+.npm
+.eslintcache
+
+# Logs & debugging
+logs/
+*.log
+*.pid
+*.seed
+*.pid.lock
+node_repl_history
+
+# Build output
+dist/
+build/
+
+# Editor & OS-specific
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# MongoDB data
+/data/db/
+dump/
+
+# Environment variables
+.env
