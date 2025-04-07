@@ -11,6 +11,13 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+const corsOptions = {
+  origin: "http://localhost:5173",  // Đảm bảo rằng frontend domain được chấp nhận
+  methods: "GET, POST",
+  credentials: true,  // Cho phép gửi cookie
+};
+app.use(cors(corsOptions));
+
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URL, {
@@ -25,7 +32,6 @@ const connectDB = async () => {
 connectDB();
 
 app.use(express.json());
-app.use(cors());
 app.use(cookieParser());
 app.use(morgan('dev'));// log requests to the console
 

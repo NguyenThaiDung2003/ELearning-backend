@@ -42,7 +42,7 @@ const authController = {
         const accessToken = jwt.sign(
           { id: user.id, admin: user.admin, },
           process.env.JWT_ACCESS_KEY,
-          { expiresIn: "1h" }
+          { expiresIn: "30s" }
         );
         const refreshToken = jwt.sign(
           { id: user.id, admin: user.admin },
@@ -67,7 +67,7 @@ const authController = {
   //Refresh
   refreshToken: (req, res) => {
     const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) return res.status(401).json("You're not authenticated!");
+    if (!refreshToken) return res.status(401).json("You're not authenticated! re");
 
     jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, (err, user) => {
         if (err) return res.status(403).json("Refresh token is not valid!");
@@ -75,7 +75,7 @@ const authController = {
         const newAccessToken = jwt.sign(
             { id: user.id, admin: user.admin },
             process.env.JWT_ACCESS_KEY,
-            { expiresIn: "1h" }
+            { expiresIn: "30s" }
         );
 
         res.status(200).json({ accessToken: newAccessToken });
