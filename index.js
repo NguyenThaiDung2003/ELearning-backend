@@ -12,7 +12,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 const corsOptions = {
-  origin:  '*',// Thay thế bằng địa chỉ frontend của bạn nếu cần
+  origin:  process.env.CLIENT_URL, // URL của client
   methods: "GET, POST",
   credentials: true,  // Cho phép gửi cookie
 };
