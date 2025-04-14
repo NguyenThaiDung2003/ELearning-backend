@@ -12,9 +12,12 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 const corsOptions = {
-  origin: "http://localhost:5173",  // Đảm bảo rằng frontend domain được chấp nhận
-  methods: "GET, POST",
-  credentials: true,  // Cho phép gửi cookie
+origin: [
+    "http://localhost:5173",             
+    "https://projectweb-68a6b.web.app",  
+  ],
+  methods: "GET,POST,PUT,DELETE,OPTIONS",
+  credentials: true,
 };
 app.use(cors(corsOptions));
 
