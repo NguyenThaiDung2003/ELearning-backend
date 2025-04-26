@@ -12,7 +12,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 const corsOptions = {
-origin: [
+  origin: [
     "http://localhost:5173",             
     "https://projectweb-68a6b.web.app",  
   ],
