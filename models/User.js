@@ -1,30 +1,27 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const userSchema = new mongoose.Schema({
-    username: {
-        type: String,
-        required: true,
-        minlength: 6,
-        maxlength: 20,
-        unique: true
+const UserSchema = new mongoose.Schema(
+  {
+    userName: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true },
+    name: { type: String, default: "" },
+    passwordHash: { type: String, required: true, select: false },
+    role: { type: String, enum: ["User", "Admin"], default: "User" },
+    avatarUrl: { type: String },
+    resetPasswordToken: {
+      type: String,
+      select: false,
     },
-    email:{
-        type: String,
-        required: true,
-        minlength: 10,
-        maxlength: 50,
-        unique: true
+    resetPasswordExpiresIn: {
+      type: Date,
+      select: false,
     },
-    password: {
-        type: String,
-        required: true,
-        minlength: 6,
-    },
-    admin: {
-        type: Boolean,
-        default: false,
-    },
-},
-    {timestamps: true}
+  },
+  {
+    timestamps: true,
+  }
 );
-module.exports = mongoose.model("User",userSchema,"elearning_users");
+
+const User = mongoose.model("User", UserSchema,"testuser");
+
+export default User;
