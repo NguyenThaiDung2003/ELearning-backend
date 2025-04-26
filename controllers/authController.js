@@ -51,9 +51,9 @@ const authController = {
         );
         res.cookie("refreshToken", refreshToken, {
           httpOnly: true,
-          secure: false,
+          secure: true,
           path: "/",
-          sameSite: "strict",
+          sameSite: "None",
       });
       
         const {password,...others} = user._doc
