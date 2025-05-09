@@ -53,8 +53,10 @@ const loginUserName = async (userName, password) => {
 
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
+    
+    const { passwordHash, ...safeUser } = user.toObject();
 
-    return { accessToken, refreshToken, role: user.role };
+    return { accessToken, refreshToken, user: safeUser };
   } catch (error) {
     throw new Error("Login failed: " + error.message);
   }
