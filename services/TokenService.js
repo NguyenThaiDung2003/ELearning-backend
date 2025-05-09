@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
  */
 export const generateAccessToken = (user) => {
     return jwt.sign(
-        { id: user._id, role: user.role }, // Payload: thông tin cơ bản của người dùng
+        { id: user._id, role: user.role , userName: user.userName, }, // Payload: thông tin cơ bản của người dùng
         process.env.JWT_ACCESS_SECRET,     // Secret key để ký token (bảo mật)
         { expiresIn: '15m' }               // Thời gian sống của access token
     );

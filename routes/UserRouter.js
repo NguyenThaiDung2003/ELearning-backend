@@ -1,8 +1,8 @@
 import express from 'express';
-import UserController from '../Controllers/UserController.js';
-import { authMiddleware } from '../Middleware/AuthMiddleware.js';
+import UserController from '../controllers/userController.js';
+import { authMiddleware } from '../middleware/AuthMiddleware.js';
 // import multer from 'multer';
-import { adminAuthMiddleware } from '../Middleware/AdminAuthMiddleware.js';
+import { adminAuthMiddleware } from '../middleware/AdminAuthMiddleware.js';
 
 // const storage = multer.memoryStorage();
 // const upload = multer({ storage: storage });

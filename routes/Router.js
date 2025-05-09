@@ -1,4 +1,4 @@
-import UserRouters from './userRouter.js'
+import UserRouters from './UserRouter.js'
 // import CourseRouters from './CourseRouter.js'
 // import CourseReviewRouters from './CourseReviewRouter.js'
 // import RegisterCourseRouter from './RegisterCourseRouter.js'

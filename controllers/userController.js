@@ -7,11 +7,7 @@ import UserService from '../services/UserService.js';
  */
 const registerUser = async (req, res) => {
     try {
-        const { userName, email, password, confirmPassword } = req.body;
-
-        if (password !== confirmPassword) {
-            return res.status(400).json({ message: "Passwords do not match" });
-        }
+        const { userName, email, password } = req.body;
 
         const user = await UserService.register(userName, email, password);
         return res.status(201).json(user);
@@ -27,7 +23,7 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
     try {
         const { userName, password } = req.body;
-        const { accessToken, refreshToken } = await UserService.loginUserName(userName, password);
+        const { accessToken, refreshToken, user } = await UserService.loginUserName(userName, password);
 
         res.cookie('refresh_token', refreshToken, {
             httpOnly: true,
@@ -35,7 +31,10 @@ const loginUser = async (req, res) => {
             sameSite: 'lax',
         });
 
-        return res.status(200).json({ accessToken });
+        return res.status(200).json({ 
+            accessToken,
+            user, // Trả về user (FE cần cái này)
+         });
     } catch (error) {
         return res.status(400).json({ message: error.message });
     }
