@@ -1,5 +1,6 @@
 import Course from "../Models/CourseModel.js";
 import Lesson from "../Models/LessonModel.js";
+import Quiz from "../Models/QuizModel.js";
 import mongoose from "mongoose";
 import slugify from "slugify";
 import RegisterCourseService from "./RegisterCourseService.js";
@@ -127,18 +128,18 @@ const getCourseByUrlSlug = async (urlSlug) => {
 const createCourse = async (data) => {
   let { name, category, level, price, discountPrice, image, description = '' } = data;
 
-  if(!name || !category || !level || !price || !image) {
+  if(!name || !category || !level || !price ||!discountPrice|| !image) {
     throw new Error("Missing required fields");
   }
 
   price = Number.parseFloat(price);
   discountPrice = Number.parseFloat(discountPrice);
 
-  if(price === NaN || price < 0){
+  if(Number.isNaN(price)||Number.isNaN(discountPrice) || price < 0){
     throw new Error("Invalid price or discount price");
   }
 
-  if(discountPrice !== NaN && discountPrice > price) {
+  if(!Number.isNaN(discountPrice) && discountPrice > price) {
     throw new Error("Discount price cannot be greater than price");
   }
 
@@ -183,18 +184,18 @@ const updateCourse = async (courseId, data) => {
 
   let { name, category, level, price, discountPrice, image, description = '' } = data;
 
-  if(!name || !category || !level || !price || !image) {
+  if(!name || !category || !level || !price || !image|| !discountPrice) {
     throw new Error("Missing required fields");
   }
 
   price = Number.parseFloat(price);
   discountPrice = Number.parseFloat(discountPrice);
 
-  if(price === NaN || price < 0){
+  if(Number.isNaN(price)||Number.isNaN(discountPrice) || price < 0){
     throw new Error("Invalid price or discount price");
   }
 
-  if(discountPrice !== NaN && discountPrice > price) {
+  if(!Number.isNaN(discountPrice) && discountPrice > price) {
     throw new Error("Discount price cannot be greater than price");
   }
 
@@ -220,6 +221,7 @@ const deleteCourse = async (courseId) => {
   session.startTransaction();
   try {
     await Lesson.deleteMany({ courseId }, { session });
+    await Quiz.deleteMany({ courseId }, { session });
     await RegisterCourseModel.deleteMany({ courseId }, { session });
     const deletedCourse = await Course.findByIdAndDelete(courseId, { session });
 

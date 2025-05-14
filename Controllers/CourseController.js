@@ -2,6 +2,9 @@ import CloudinaryService from '../Services/CloudinaryService.js';
 import CourseService from '../Services/CourseService.js';
 import RegisterCourseService from '../Services/RegisterCourseService.js';
 
+/**
+ * Lấy danh sách các khóa học (có thể kèm query filter/pagination).
+ */
 const getCourses = async (req, res) => {  
   try {  
     const result = await CourseService.getCourses(req.query);
@@ -11,6 +14,9 @@ const getCourses = async (req, res) => {
   }
 };
 
+/**
+ * Lấy chi tiết khóa học theo courseId.
+ */
 const getCourseById = async (req, res) => {
   try {
     const course = await CourseService.getCourseById(req.params.courseId);
@@ -23,6 +29,9 @@ const getCourseById = async (req, res) => {
   }
 };
 
+/**
+ * Lấy khóa học theo urlSlug (đường dẫn thân thiện).
+ */
 const getCourseByUrlSlug = async (req, res) => {
   try {
     const course = await CourseService.getCourseByUrlSlug(req.params.urlSlug);
@@ -35,6 +44,9 @@ const getCourseByUrlSlug = async (req, res) => {
   }
 };
 
+/**
+ * Tạo mới một khóa học, yêu cầu upload ảnh (dùng Cloudinary).
+ */
 const createCourse = async (req, res) => {
   try {
     if(!req.file) {
@@ -42,7 +54,6 @@ const createCourse = async (req, res) => {
     }
     
     const imageUrl = await CloudinaryService.uploadFile(req.file);
-
     const newCourse = await CourseService.createCourse({...req.body, image: imageUrl});
     return res.status(201).json(newCourse);
   } catch (error) {
@@ -50,12 +61,17 @@ const createCourse = async (req, res) => {
   }
 };
 
+/**
+ * Tạo nhiều khóa học cùng lúc, chỉ Admin được phép.
+ */
 const createCourseMany = async (req, res) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: 'User not logged in' });
     }
-    if(req?.user?.role !== 'Admin') return res.status(403).json({ message: 'You are not allowed to create courses' });
+    if(req?.user?.role !== 'Admin') {
+      return res.status(403).json({ message: 'You are not allowed to create courses' });
+    }
     
     const newCourses = await CourseService.createCourses(req.body);
     return res.status(201).json(newCourses);
@@ -64,6 +80,10 @@ const createCourseMany = async (req, res) => {
   }
 }
 
+/**
+ * Cập nhật thông tin khóa học theo courseId.
+ * Có thể cập nhật kèm ảnh mới (nếu có).
+ */
 const updateCourse = async (req, res) => {
   const courseId = req.params.courseId;
   if(!courseId) {
@@ -90,6 +110,9 @@ const updateCourse = async (req, res) => {
   }
 };
 
+/**
+ * Xóa khóa học theo courseId.
+ */
 const deleteCourse = async (req, res) => {
   const courseId = req.params.courseId;
   if(!courseId) {
@@ -107,6 +130,9 @@ const deleteCourse = async (req, res) => {
   }
 };
 
+/**
+ * Lấy danh sách các khóa học đã được xác nhận cho người dùng hiện tại.
+ */
 const getConfirmedCoursesForUser = async (req, res) => {
   if (!req.user) {
     return res.status(401).json({ message: 'User not logged in' });
@@ -119,6 +145,9 @@ const getConfirmedCoursesForUser = async (req, res) => {
   }
 }
 
+/**
+ * Lấy danh sách người dùng đã đăng ký khóa học.
+ */
 const getRegisteredUsers = async (req, res) => {
   const courseId = req.params.courseId;
   if(!courseId) {
@@ -127,12 +156,15 @@ const getRegisteredUsers = async (req, res) => {
 
   try {
     const registeredUsers = await RegisterCourseService.getRegisteredUsers(courseId);
-    return res.status(200).json({count: registeredUsers.length, registeredUsers});
+    return res.status(200).json({ count: registeredUsers.length, registeredUsers });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 }
 
+/**
+ * Lấy tổng số lượng khóa học trong hệ thống.
+ */
 const getTotalCourses = async (req, res) => {
   try {
     const totalCourses = await CourseService.getTotalCourses();
@@ -142,6 +174,7 @@ const getTotalCourses = async (req, res) => {
   }
 }
 
+// Xuất tất cả controller ra ngoài
 export default {
   getCourses,
   getCourseById,
