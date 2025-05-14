@@ -21,7 +21,7 @@ export const uploadFile = async (file) => {
         const result = await cloudinary.uploader.upload(dataUrl, {
             public_id: fileName,
             resource_type: 'auto',
-            folder: 'Edupress',
+            folder: 'Elearning',
             overwrite: true
         });
         
@@ -47,7 +47,7 @@ export const uploadFiles = async (listFile) => {
             const result = await cloudinary.uploader.upload(dataUrl, {
                 public_id: fileName,
                 resource_type: 'auto',
-                folder: 'Edupress',
+                folder: 'Elearning',
                 overwrite: true
             });
             listResult.push(result);

@@ -1,13 +1,19 @@
 import LessonService from '../Services/LessonService.js';
 import CourseService from '../Services/CourseService.js';
 
+/**
+ * Tạo bài học mới thuộc một khóa học
+ * Yêu cầu: `courseId` trong req.body phải hợp lệ và tồn tại
+ */
 const createLesson = async (req, res) => {
     try {
+        // Kiểm tra khóa học có tồn tại không
         const course = await CourseService.getCourseById(req.body.courseId);
         if (!course) {
             return res.status(404).json({ message: 'Course not found' });
         }
 
+        // Tạo bài học mới
         const lesson = await LessonService.createLesson(req.body);
         return res.status(201).json(lesson);
     } catch (error) {
@@ -15,6 +21,9 @@ const createLesson = async (req, res) => {
     }
 };
 
+/**
+ * Lấy thông tin một bài học theo ID
+ */
 const getLessonById = async (req, res) => {
     const { id } = req.params;
     try {
@@ -30,6 +39,10 @@ const getLessonById = async (req, res) => {
     }
 };
 
+/**
+ * Cập nhật thông tin một bài học
+ * Dựa trên ID của bài học và dữ liệu trong req.body
+ */
 const updateLesson = async (req, res) => {
     const { id } = req.params;
     try {
@@ -45,6 +58,9 @@ const updateLesson = async (req, res) => {
     }
 };
 
+/**
+ * Xóa một bài học theo ID
+ */
 const deleteLesson = async (req, res) => {
     const { id } = req.params;
     try {
@@ -60,6 +76,10 @@ const deleteLesson = async (req, res) => {
     }
 };
 
+/**
+ * Lấy danh sách các bài học trong một khóa học
+ * Gửi kèm userId và role để áp dụng phân quyền nếu cần
+ */
 const getLessonsByCourse = async (req, res) => {
     const userId = req?.user?.id;
     const role = req?.user?.role;
@@ -70,12 +90,13 @@ const getLessonsByCourse = async (req, res) => {
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
-}
+};
 
+// Xuất toàn bộ controller
 export default {
     createLesson,
     getLessonById,
     updateLesson,
     deleteLesson,
     getLessonsByCourse,
-}
+};

@@ -2,6 +2,10 @@ import CourseReviewService from '../Services/CourseReviewService.js';
 import CourseReview from '../Models/CourseReview.js';
 import RegisterCourseService from '../Services/RegisterCourseService.js';
 
+/**
+ * Tạo đánh giá cho một khóa học
+ * Chỉ cho phép người dùng đã đăng nhập
+ */
 const createReview = async (req, res) => {
   try {
     if (!req.user) {
@@ -11,9 +15,10 @@ const createReview = async (req, res) => {
     const { courseId, rating, review } = req.body;
     const userId = req.user.id;
 
+    // TODO: Có thể bổ sung logic xác nhận người dùng đã học xong khóa học trước khi cho phép đánh giá
     // const confirmed = await CourseService.isCourseConfirmed(userId, courseId);
     // if (!confirmed) {
-    //   return res.status(403).json({ message: 'You have not confirmed completion of this course, you cannot leave a review.' });
+    //   return res.status(403).json({ message: 'You must complete the course before leaving a review.' });
     // }
 
     const newReview = await CourseReviewService.createReview(userId, courseId, rating, review);
@@ -23,6 +28,11 @@ const createReview = async (req, res) => {
   }
 };
 
+/**
+ * Cập nhật đánh giá
+ * Người dùng chỉ được phép sửa đánh giá của chính mình
+ * Admin có thể sửa bất kỳ đánh giá nào
+ */
 const updateReview = async (req, res) => {
   try {
     if (!req.user) {
@@ -34,13 +44,16 @@ const updateReview = async (req, res) => {
     const userRole = req.user.role;
     const reviewId = req.params.id;
 
-    const updatedReview = await CourseReviewService.updateReview(userId, userRole, reviewId, rating, review );
+    const updatedReview = await CourseReviewService.updateReview(userId, userRole, reviewId, rating, review);
     return res.status(200).json({ message: 'Review updated successfully', review: updatedReview });
   } catch (error) {
     return res.status(500).json({ message: 'Error updating review', error: error.message });
   }
 };
 
+/**
+ * Lấy tất cả đánh giá theo ID khóa học
+ */
 const getReviewsByCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
@@ -51,6 +64,10 @@ const getReviewsByCourse = async (req, res) => {
   }
 };
 
+/**
+ * Xóa đánh giá
+ * Người dùng chỉ được xóa đánh giá của chính họ, Admin có thể xóa tất cả
+ */
 const deleteReview = async (req, res) => {
   try {
     if (!req.user) {
@@ -65,6 +82,7 @@ const deleteReview = async (req, res) => {
       return res.status(404).json({ message: 'Review not found' });
     }
 
+    // Chỉ xóa nếu là chủ sở hữu hoặc admin
     if (existingReview.userId.toString() !== userId && req.user.role !== 'Admin') {
       return res.status(403).json({ message: 'You are not authorized to delete this review' });
     }
@@ -76,6 +94,9 @@ const deleteReview = async (req, res) => {
   }
 };
 
+/**
+ * Lấy tổng số lượng đánh giá hiện có trong hệ thống
+ */
 const getTotalReviews = async (req, res) => {
   try {
     const totalReviews = await CourseReviewService.getTotalReviews();
@@ -83,12 +104,13 @@ const getTotalReviews = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ message: 'Error fetching total totalReviews', error: error.message });
   }
-}
+};
 
+// Xuất tất cả controller
 export default {
   createReview,
   updateReview,
   getReviewsByCourse,
   deleteReview,
   getTotalReviews,
-}
+};
