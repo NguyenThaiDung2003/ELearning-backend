@@ -26,5 +26,4 @@ router.post('/verify-reset-password-token/:email', UserController.verifyResetPas
 router.patch('/reset-password', UserController.resetPassword);
 router.patch('/change-password', authMiddleware, UserController.changePassword);
 router.get('/admin/get-total-users', authMiddleware, adminAuthMiddleware, UserController.getTotalUsers);
-
 export default router;
