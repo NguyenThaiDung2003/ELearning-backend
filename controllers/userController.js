@@ -1,6 +1,6 @@
 // Import các service liên quan đến người dùng và upload file
-import UserService from '../services/UserService.js';
-// import CloudinaryService from '../Services/CloudinaryService.js';
+import UserService from '../Services/UserService.js';
+import CloudinaryService from '../Services/CloudinaryService.js';
 
 /**
  * Đăng ký tài khoản mới
@@ -32,7 +32,7 @@ const loginUser = async (req, res) => {
         res.cookie('refresh_token', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            sameSite: 'None',
         });
 
         return res.status(200).json({ accessToken });
@@ -96,20 +96,20 @@ const getUsers = async (req, res) => {
 /**
  * Cập nhật ảnh đại diện người dùng (upload lên Cloudinary)
  */
-// const updateAvatar = async (req, res) => {
-//     try {
-//         const userId = req.user.id;
-//         if (!userId) return res.status(401).json({ message: 'User does not exist' });
+const updateAvatar = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        if (!userId) return res.status(401).json({ message: 'User does not exist' });
 
-//         const avatarFile = req.file;
-//         const fileUrl = await CloudinaryService.uploadFile(avatarFile);
-//         await UserService.updateAvatar(userId, fileUrl);
+        const avatarFile = req.file;
+        const fileUrl = await CloudinaryService.uploadFile(avatarFile);
+        await UserService.updateAvatar(userId, fileUrl);
 
-//         return res.status(200).json({ avatarUrl: fileUrl });
-//     } catch (error) {
-//         return res.status(400).json({ message: error.message });
-//     }
-// };
+        return res.status(200).json({ avatarUrl: fileUrl });
+    } catch (error) {
+        return res.status(400).json({ message: error.message });
+    }
+};
 
 /**
  * Xóa người dùng theo ID
@@ -292,7 +292,7 @@ export default {
     refreshUserToken,
     getUserProfile,
     getUsers,
-    // updateAvatar,
+    updateAvatar,
     deleteUser,
     updateUserProfile,
     createUser,

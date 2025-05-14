@@ -1,27 +1,25 @@
-// Các import cần thiết
-import bcrypt from "bcrypt"; // Thư viện mã hóa mật khẩu
-import User from "../models/User.js"; // Model người dùng
+import bcrypt from "bcrypt";
+import User from "../Models/User.js";
 import {
   generateAccessToken,
   generateRefreshToken,
   validateRefreshToken,
-} from "./TokenService.js"; // Service xử lý JWT
+} from "./TokenService.js";
 import mongoose from "mongoose";
-// import CourseReview from "../Models/CourseReview.js"; // Model đánh giá khóa học
-// import RegisterCourseModel from "../Models/RegisterCourseModel.js"; // Model đăng ký khóa học
-import { sendEmailResetPassword } from "./EmailService.js"; // Service gửi email
-import otpGenerator from 'otp-generator'; // Thư viện tạo mã OTP
+import CourseReview from "../Models/CourseReview.js";
+import RegisterCourseModel from "../Models/RegisterCourseModel.js";
+import { sendEmailResetPassword } from "./EmailService.js"
+import otpGenerator from 'otp-generator';
 
-// Đăng ký người dùng
 const register = async (userName, email, password) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
-    throw new Error("Invalid email format"); // Kiểm tra định dạng email
+    throw new Error("Invalid email format");
   }
 
   const existingUser = await User.findOne({ $or: [{ userName }, { email }] });
   if (existingUser) {
-    throw new Error("User already exists with this username or email"); // Kiểm tra trùng tên/email
+    throw new Error("User already exists with this username or email");
   }
 
   if (!password || password.length < 6) {
@@ -29,20 +27,22 @@ const register = async (userName, email, password) => {
   }
 
   try {
-    const hashedPassword = await bcrypt.hash(password, 10); // Mã hóa mật khẩu
+    const hashedPassword = await bcrypt.hash(password, 10);  //number: số lượng vòng lặp (rounds) để tạo salt và thực hiện quá trình hashing.
     const user = new User({
       userName,
       email,
       passwordHash: hashedPassword,
     });
     await user.save();
-    return { userName, email }; // Trả về thông tin cơ bản sau đăng ký
+    return {
+      userName,
+      email,
+    };
   } catch (error) {
     throw new Error("Registration failed: " + error.message);
   }
 };
 
-// Đăng nhập bằng userName
 const loginUserName = async (userName, password) => {
   try {
     const user = await User.findOne({ userName }).select("+passwordHash");
@@ -60,7 +60,6 @@ const loginUserName = async (userName, password) => {
   }
 };
 
-// Làm mới access token từ refresh token
 const refreshToken = async (refreshToken) => {
   try {
     const decoded = validateRefreshToken(refreshToken);
@@ -70,18 +69,17 @@ const refreshToken = async (refreshToken) => {
     if (!user) throw new Error("User not found");
 
     const newAccessToken = generateAccessToken(user);
+
     return { accessToken: newAccessToken };
   } catch (error) {
     throw new Error("Token refresh failed: " + error.message);
   }
 };
 
-// Lấy thông tin người dùng
 const getUserProfile = async (id) => {
   try {
     const user = await User.findById(id);
     if (!user) throw new Error("User not found");
-
     return {
       userName: user.userName,
       email: user.email,
@@ -94,19 +92,21 @@ const getUserProfile = async (id) => {
   }
 };
 
-// Cập nhật ảnh đại diện
 const updateAvatar = async (id, avatarUrl) => {
   try {
-    await User.findByIdAndUpdate(id, { avatarUrl });
+    await User.findByIdAndUpdate(id, {
+      avatarUrl,
+    });
   } catch (error) {
     throw new Error("Error updating avatar");
   }
 };
 
-// Cập nhật thông tin người dùng
 const updateUserProfile = async (id, newInfo) => {
   try {
-    const updatedUser = await User.findByIdAndUpdate(id, newInfo, { new: true });
+    const updatedUser = await User.findByIdAndUpdate(id, newInfo, {
+      new: true,
+    });
     return {
       userName: updatedUser.userName,
       email: updatedUser.email,
@@ -119,7 +119,6 @@ const updateUserProfile = async (id, newInfo) => {
   }
 };
 
-// Lấy danh sách tất cả người dùng
 const getUsers = async () => {
   try {
     return await User.find();
@@ -128,7 +127,6 @@ const getUsers = async () => {
   }
 };
 
-// Xóa người dùng (và dữ liệu liên quan)
 const deleteUser = async (userId) => {
   if (!mongoose.Types.ObjectId.isValid(userId)) {
     throw new Error("Invalid userId");
@@ -138,38 +136,58 @@ const deleteUser = async (userId) => {
   session.startTransaction();
 
   try {
-    // await CourseReview.deleteMany({ userId }, { session });
-    // await RegisterCourseModel.deleteMany({ userId }, { session });
+    await CourseReview.deleteMany({ userId: userId }, { session });
+    await RegisterCourseModel.deleteMany({ userId: userId }, { session });
+
     const deletedUser = await User.findByIdAndDelete(userId, { session });
 
     await session.commitTransaction();
     session.endSession();
 
-    if (!deletedUser) throw new Error("User not found");
+    if (!deletedUser) {
+      throw new Error("User not found");
+    }
+
     return { message: "User deleted successfully" };
   } catch (error) {
     await session.abortTransaction();
-    session.endSession();
+    await session.endSession();
     throw new Error("Error deleting user: " + error.message);
   }
 };
 
-// Tạo người dùng mới (Admin dùng)
 const createUser = async (userName, email, name = "", password, role) => {
-  if (!userName) throw new Error("Username is required");
+  if (!userName) {
+    throw new Error("Username is required");
+  }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) throw new Error("Invalid email format");
+  if (!emailRegex.test(email)) {
+    throw new Error("Invalid email format");
+  }
 
   const existingUser = await User.findOne({ $or: [{ userName }, { email }] });
-  if (existingUser) throw new Error("User already exists with this username or email");
+  if (existingUser) {
+    throw new Error("User already exists with this username or email");
+  }
 
-  if (!password || password.length < 6) throw new Error("Password must be at least 6 characters long");
-  if (!role || !["User", "Admin"].includes(role)) throw new Error("Invalid role");
+  if (!password || password.length < 6) {
+    throw new Error("Password must be at least 6 characters long");
+  }
+
+  if (!role || !["User", "Admin"].includes(role)) {
+    throw new Error("Invalid role");
+  }
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ userName, email, name, passwordHash: hashedPassword, role });
+    const user = new User({
+      userName,
+      email,
+      name,
+      passwordHash: hashedPassword,
+      role,
+    });
     await User.create(user);
     return {
       userName: user.userName,
@@ -183,24 +201,32 @@ const createUser = async (userName, email, name = "", password, role) => {
   }
 };
 
-// Sửa thông tin người dùng (Admin dùng)
 const editUserProfile = async (userId, { name, role }) => {
-  if (!mongoose.Types.ObjectId.isValid(userId)) throw new Error("Invalid userId");
-  if (!role || !["User", "Admin"].includes(role)) throw new Error("Invalid role");
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    throw new Error("Invalid userId");
+  }
+  if (!role || !["User", "Admin"].includes(role)) {
+    throw new Error("Invalid role");
+  }
 
   try {
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { name, role },
-      { new: true }
+      {
+        name,
+        role,
+      },
+      {
+        new: true,
+      }
     );
+
     return updatedUser;
   } catch (error) {
     throw new Error("Error updating user profile: " + error.message);
   }
 };
 
-// Tìm kiếm người dùng theo điều kiện
 const searchUsers = async (query) => {
   const { userName, name, email, role } = query;
   const queryObject = {};
@@ -211,13 +237,13 @@ const searchUsers = async (query) => {
   if (role) queryObject.role = role;
 
   try {
-    return await User.find(queryObject);
+    const users = await User.find(queryObject);
+    return users;
   } catch (error) {
     throw new Error("Error searching users:" + error.message);
   }
 };
 
-// Quên mật khẩu: Gửi OTP đến email
 const forgotPassword = async (email) => {
   try {
     const user = await User.findOne({ email });
@@ -230,8 +256,9 @@ const forgotPassword = async (email) => {
     });
 
     user.resetPasswordToken = resetPasswordOTP;
-    user.resetPasswordExpiresIn = Date.now() + 5 * 60 * 1000; // Hết hạn sau 5 phút
+    user.resetPasswordExpiresIn = Date.now() + 5 * 60 * 1000;
     await sendEmailResetPassword(email, resetPasswordOTP);
+
     await user.save();
   } catch (error) {
     console.error("Error while saving user:", error);
@@ -239,25 +266,27 @@ const forgotPassword = async (email) => {
   }
 };
 
-// Xác minh token OTP
 const verifyResetPasswordToken = async (email, token) => {
   try {
     const user = await User.findOne({ email, resetPasswordToken: token });
     if (!user) return false;
-    if (Date.now() > new Date(user.resetPasswordExpiresIn).getTime()) return false;
+    if (Date.now() > new Date(user.resetPasswordExpiresIn).getTime())
+      return false;
     return true;
   } catch (error) {
     throw new Error("Token is invalid!");
   }
 };
 
-// Đặt lại mật khẩu mới bằng token
 const resetPassword = async (email, token, password) => {
   const user = await User.findOne({ email, resetPasswordToken: token });
   if (!user) throw new Error("Reset password failed!");
   if (Date.now() > new Date(user.resetPasswordExpiresIn).getTime())
     throw new Error("OTP is expired!");
-  if (password.length < 6) throw new Error("The password is at least 6 characters!");
+
+  if(password.length < 6) {
+    throw new Error("The password is at least 6 characters!");
+  }
 
   user.passwordHash = bcrypt.hashSync(password, 10);
   user.resetPasswordToken = null;
@@ -265,36 +294,40 @@ const resetPassword = async (email, token, password) => {
   await user.save();
 };
 
-// Thay đổi mật khẩu khi đã đăng nhập
 const changePassword = async (userId, currentPassword, newPassword) => {
-  if (!mongoose.Types.ObjectId.isValid(userId)) throw new Error("Invalid userId");
+  if(!mongoose.Types.ObjectId.isValid(userId)) {
+    throw new Error("Invalid userId");
+  }
 
   const user = await User.findById(userId).select("+passwordHash");
   if (!user) throw new Error("Change password failed!");
-
+  
   const isValidPassword = await bcrypt.compare(currentPassword, user.passwordHash);
-  if (!isValidPassword) throw new Error("Incorrect password");
+  if(!isValidPassword) throw new Error("Incorrect password");
 
-  if (newPassword.length < 6) throw new Error("The password is at least 6 characters!");
+  if(newPassword.length < 6) {
+    throw new Error("The password is at least 6 characters!");
+  }
 
   user.passwordHash = bcrypt.hashSync(newPassword, 10);
+  
   try {
     await user.save();
-  } catch (error) {
-    throw new Error("Change password failed");
+  }
+  catch(error) {
+    throw new Error("Change password failed" );
   }
 };
 
-// Thống kê tổng số người dùng
 const getTotalUsers = async () => {
   try {
-    return await User.countDocuments();
+    const totalUsers = await User.countDocuments();
+    return totalUsers;
   } catch (error) {
     throw new Error("Error getting total users: " + error.message);
   }
-};
+}
 
-// Xuất tất cả hàm dưới dạng service
 export default {
   register,
   loginUserName,

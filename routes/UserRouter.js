@@ -1,11 +1,11 @@
 import express from 'express';
 import UserController from '../Controllers/UserController.js';
 import { authMiddleware } from '../Middleware/AuthMiddleware.js';
-// import multer from 'multer';
+import multer from 'multer';
 import { adminAuthMiddleware } from '../Middleware/AdminAuthMiddleware.js';
 
-// const storage = multer.memoryStorage();
-// const upload = multer({ storage: storage });
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 const router = express.Router();
 
@@ -14,7 +14,7 @@ router.post('/login', UserController.loginUser);
 router.post('/logout', UserController.logoutUser);
 router.post('/refresh-token', UserController.refreshUserToken);
 router.get('/profile', authMiddleware, UserController.getUserProfile);
-// router.put('/updateAvatar', authMiddleware, upload.single('avatarFile'), UserController.updateAvatar);
+router.put('/updateAvatar', authMiddleware, upload.single('avatarFile'), UserController.updateAvatar);
 router.put('/update', authMiddleware, UserController.updateUserProfile);
 router.get('/admin/get-all', authMiddleware, adminAuthMiddleware, UserController.getUsers);
 router.post('/admin/create-user', authMiddleware, adminAuthMiddleware, UserController.createUser);

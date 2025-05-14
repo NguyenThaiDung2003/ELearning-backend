@@ -1,29 +1,25 @@
-# Node.js dependencies
+# Node.js
 node_modules/
-.npm
-.eslintcache
 
-# Logs & debugging
-logs/
+# Logs
+logs
 *.log
+npm-debug.log*
+
+# Dependency directories
+pids
+logs
 *.pid
 *.seed
 *.pid.lock
-node_repl_history
 
-# Build output
-dist/
-build/
+# Optional npm cache directory
+.npm
 
-# Editor & OS-specific
-.vscode/
-.idea/
-.DS_Store
-Thumbs.db
+# Optional eslint cache
+.eslintcache
 
-# MongoDB data
-/data/db/
-dump/
+# Optional REPL history
+.node_repl_history
 
-# Environment variables
 .env
