@@ -10,7 +10,7 @@ import CourseReview from "../Models/CourseReview.js";
 import RegisterCourseModel from "../Models/RegisterCourseModel.js";
 import { sendEmailResetPassword } from "./EmailService.js"
 import otpGenerator from 'otp-generator';
-import Profile from "../models/Profile.js";
+import Profile from "../Models/Profile.js";
 
 const register = async (userName, email, password) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
