@@ -27,15 +27,15 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
     try {
         const { userName, password } = req.body;
-        const { accessToken, refreshToken } = await UserService.loginUserName(userName, password);
+        const { accessToken, refreshToken,user } = await UserService.loginUserName(userName, password);
 
         res.cookie('refresh_token', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'None',
+            sameSite: 'Lax',
         });
 
-        return res.status(200).json({ accessToken });
+        return res.status(200).json({ accessToken,user, });
     } catch (error) {
         return res.status(400).json({ message: error.message });
     }
@@ -72,14 +72,24 @@ const refreshUserToken = async (req, res) => {
 const getUserProfile = async (req, res) => {
     try {
         const userId = req.user.id;
-        if (!userId) return res.status(401).json({ message: 'User does not exist' });
 
-        const user = await UserService.getUserProfile(userId);
-        return res.status(200).json(user);
+        if (!userId) {
+            return res.status(401).json({ message: 'User does not exist' });
+        }
+
+        const userData = await UserService.getUserProfile(userId);
+
+        if (!userData) {
+            return res.status(404).json({ message: 'User profile not found' });
+        }
+
+        return res.status(200).json(userData);
     } catch (error) {
-        return res.status(400).json({ message: error.message });
+        console.error("Error in getUserProfile:", error);
+        return res.status(500).json({ message: "Internal server error" });
     }
 };
+
 
 /**
  * Lấy danh sách tất cả người dùng (cho admin)
@@ -132,14 +142,23 @@ const updateUserProfile = async (req, res) => {
         const userId = req.user.id;
         if (!userId) return res.status(401).json({ message: 'User does not exist' });
 
-        const { name } = req.body;
-        const updatedUser = await UserService.updateUserProfile(userId, { name });
+        const { fullName, phone, birthday, address } = req.body;
 
-        return res.status(200).json({ updatedUser });
+        // Gọi service để update Profile thay vì User
+        const updatedProfile = await UserService.updateUserProfile(userId, {
+            fullName,
+            phone,
+            birthday,
+            address
+        });
+
+        return res.status(200).json({ profile: updatedProfile });
     } catch (error) {
+        console.error(error);
         return res.status(400).json({ message: error.message });
     }
 };
+
 
 /**
  * Tạo người dùng mới (chức năng cho admin)
