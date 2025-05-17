@@ -10,6 +10,7 @@ import CourseReview from "../Models/CourseReview.js";
 import RegisterCourseModel from "../Models/RegisterCourseModel.js";
 import { sendEmailResetPassword } from "./EmailService.js"
 import otpGenerator from 'otp-generator';
+import Profile from "../models/Profile.js";
 
 const register = async (userName, email, password) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -54,7 +55,8 @@ const loginUserName = async (userName, password) => {
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
-    return { accessToken, refreshToken, role: user.role };
+    const { passwordHash, ...safeUser } = user.toObject();
+    return { accessToken, refreshToken, user: safeUser};
   } catch (error) {
     throw new Error("Login failed: " + error.message);
   }
@@ -80,12 +82,15 @@ const getUserProfile = async (id) => {
   try {
     const user = await User.findById(id);
     if (!user) throw new Error("User not found");
+
+    const profile = await Profile.findOne({ userId: id });
+
     return {
       userName: user.userName,
       email: user.email,
-      name: user.name,
       role: user.role,
       avatarUrl: user.avatarUrl,
+      profile: profile || {}, // nếu chưa có profile, trả về object rỗng
     };
   } catch (error) {
     throw new Error("Error retrieving user profile");
@@ -104,20 +109,24 @@ const updateAvatar = async (id, avatarUrl) => {
 
 const updateUserProfile = async (id, newInfo) => {
   try {
-    const updatedUser = await User.findByIdAndUpdate(id, newInfo, {
-      new: true,
-    });
-    return {
-      userName: updatedUser.userName,
-      email: updatedUser.email,
-      name: updatedUser.name,
-      role: updatedUser.role,
-      avatarUrl: updatedUser.avatarUrl,
-    };
+    // Cập nhật profile
+    const updatedProfile = await Profile.findOneAndUpdate(
+      { userId: id },
+      {
+        fullName: newInfo.fullName,
+        phone: newInfo.phone,
+        birthday: newInfo.birthday,
+        address: newInfo.address,
+      },
+      { upsert: true, new: true } // nếu chưa có profile thì tạo mới
+    );
+
+    return updatedProfile;
   } catch (error) {
-    throw new Error("Error updating user info");
+    throw new Error("Error updating user profile");
   }
 };
+
 
 const getUsers = async () => {
   try {
