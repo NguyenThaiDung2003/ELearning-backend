@@ -237,15 +237,37 @@ const deleteCourse = async (courseId) => {
 
 const getConfirmedCoursesForUser = async (userId) => {
   try {
-    const confirmedCourseIds = await RegisterCourseService.getConfirmedCoursesForUser(userId);
-    const courses = await Course.find({ _id: { $in: confirmedCourseIds } });
-    return courses;
+    const confirmedCourses = await RegisterCourseService.getConfirmedCoursesForUser(userId);
+
+    //  console.log('confirmedCourses:', confirmedCourses);
+
+    // Lấy danh sách courseId
+    const courseIds = confirmedCourses.map((item) => item.courseId);
+
+    // Truy vấn thông tin các khóa học
+    const courses = await Course.find({ _id: { $in: courseIds } });
+
+      // console.log('courses:', courses); 
+
+    // Gộp thông tin registeredAt vào từng khóa học
+    const coursesWithRegisteredAt = courses.map((course) => {
+      const matched = confirmedCourses.find((item) =>
+        item.courseId.toString() === course._id.toString()
+      );
+      return {
+        ...course.toObject(),
+        registeredAt: matched?.registeredAt || null,
+      };
+    });
+
+    return coursesWithRegisteredAt;
   } catch (error) {
     throw new Error(
       "Error fetching confirmed courses for user: " + error.message
     );
   }
 };
+
 
 const getTotalCourses = async () => {
   try {

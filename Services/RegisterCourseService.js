@@ -71,10 +71,16 @@ const getConfirmedCoursesForUser = async (userId) => {
     const confirmedCourses = await RegisterCourseModel.find({
       userId,
       status: "Confirmed",
-    }).select("courseId");
+    }).select("courseId createdAt");
 
-    const courseIds = confirmedCourses.map((course) => course.courseId);
-    return courseIds;
+    // console.log("confirmedCourses", confirmedCourses);
+    // Trả về mảng object chứa courseId và thời điểm đăng ký
+    const result = confirmedCourses.map((item) => ({
+      courseId: item.courseId,
+      registeredAt: item.createdAt,
+    }));
+
+    return result;
   } catch (error) {
     throw new Error("Error fetching registrations of user: " + error.message);
   }
